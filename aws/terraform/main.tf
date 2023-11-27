@@ -41,6 +41,10 @@ resource "aws_subnet" "sn_dasboto" {
 
 resource "aws_internet_gateway" "dasboto" {
   vpc_id = aws_vpc.main.id
+    tags = {
+    Name = "${aws_vpc.main.tags.Name}-web-igw"
+  }
+
 }
 
 resource "aws_route_table" "dasboto" {
@@ -64,5 +68,5 @@ resource "aws_route_table_association" "dasboto_web_rt_assoc" {
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.dasboto.id
-  
+
 }
