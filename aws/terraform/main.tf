@@ -39,4 +39,30 @@ resource "aws_subnet" "sn_dasboto" {
   tags = each.value.tags
 }
 
+resource "aws_internet_gateway" "dasboto" {
+  vpc_id = aws_vpc.main.id
+}
 
+resource "aws_route_table" "dasboto" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.dasboto.id
+  }
+
+  tags = {
+    Name = "dasboto-web-rt-igw"
+  }
+}
+
+resource "aws_route_table_association" "dasboto_web_rt_assoc" {
+  for_each = {
+    for key, value in aws_subnet.sn_dasboto : key => value if split("-", value.tags.Name)[1] == "web"
+  }
+
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.dasboto.id
+  
+}
