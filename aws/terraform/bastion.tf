@@ -23,6 +23,7 @@ data "aws_subnet" "selected" {
     name   = "tag:Name"
     values = ["sn-web-A"]
   }
+  depends_on = [ aws_subnet.sn_dasboto ]
 }
 
 resource "aws_key_pair" "ias_dasbotoapp_kp" {
@@ -49,4 +50,5 @@ resource "aws_instance" "web" {
               echo "Hello from test.txt!" > /tmp/test.txt
               EOF
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+
 }

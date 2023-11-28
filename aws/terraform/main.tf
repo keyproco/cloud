@@ -47,7 +47,9 @@ resource "aws_internet_gateway" "dasboto" {
 
 }
 
+
 resource "aws_route_table" "dasboto" {
+
   vpc_id = aws_vpc.main.id
 
   route {
@@ -55,15 +57,16 @@ resource "aws_route_table" "dasboto" {
     gateway_id = aws_internet_gateway.dasboto.id
   }
 
+
   tags = {
     Name = "dasboto-web-rt-igw"
   }
+  depends_on = [ aws_subnet.sn_dasboto ]
 }
 
 
-
 resource "aws_route_table_association" "dasboto_web_rt_assoc" {
-    
+
   for_each = {
     for key, value in aws_subnet.sn_dasboto : key => value if split("-", value.tags.Name)[1] == "web"
   }
@@ -74,3 +77,29 @@ resource "aws_route_table_association" "dasboto_web_rt_assoc" {
 }
 
 
+# NAT CONFIG
+resource "aws_eip" "dasboto_ng" {
+    for_each = {
+    for key, value in aws_subnet.sn_dasboto : key => value if split("-", value.tags.Name)[1] == "web"
+  }
+  
+  domain = "vpc"
+  tags = {
+    SubnetName = each.value.tags.Name
+    SubnetId = each.value.id
+    AvailabilityZone = each.value.availability_zone
+  }
+}
+
+resource "aws_nat_gateway" "dasboto_ng" {
+  for_each = aws_eip.dasboto_ng
+  
+  allocation_id = each.value.id
+  subnet_id     = each.value.tags.SubnetId
+  
+  tags = {
+    Name = "gw-nat-dasboto-${each.value.tags.AvailabilityZone}"
+  }
+
+  depends_on = [ aws_internet_gateway.dasboto, aws_subnet.sn_dasboto ]
+}
