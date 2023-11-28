@@ -60,13 +60,17 @@ resource "aws_route_table" "dasboto" {
   }
 }
 
+
+
 resource "aws_route_table_association" "dasboto_web_rt_assoc" {
+    
   for_each = {
     for key, value in aws_subnet.sn_dasboto : key => value if split("-", value.tags.Name)[1] == "web"
   }
-
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.dasboto.id
 
 }
+
+
