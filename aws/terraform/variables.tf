@@ -56,3 +56,14 @@ variable "dasboto_networks" {
     },
   }
 }
+
+
+variable "db_parameters" {
+  default = {
+    DBRootPassword = { value = "root_pass", is_password = true }
+    DBPassword     = { value = "db_pass", is_password = true }
+    DBEndpoint     = { value = "localhost", is_password = false }
+    DBName         = { value = "wordpress", is_password = false }
+    DBUser         = { value = "db_user", is_password = false }
+  }
+}

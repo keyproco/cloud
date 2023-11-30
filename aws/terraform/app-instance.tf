@@ -42,7 +42,7 @@ resource "aws_security_group" "allow_app" {
 data "aws_subnet" "sn_app_a" {
   filter {
     name   = "tag:Name"
-    values = ["sn-app-B"]
+    values = ["sn-web-B"]
   }
   depends_on = [aws_subnet.sn_dasboto]
 }
@@ -74,28 +74,39 @@ resource "aws_iam_role_policy_attachment" "dev-resources-ssm-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+
+
+resource "aws_ssm_parameter" "wordpress" {
+  for_each = var.db_parameters
+
+  name  = "/app/wordpress/${each.key}"
+  type  = each.value.is_password ? "SecureString" : "String"
+  value = each.value.value
+}
+
 resource "aws_instance" "app" {
-  ami                         = "ami-04b7bf9494d21c5bb"
+  ami                         = "ami-0302f42a44bf53a45"
   instance_type               = "t2.micro"
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   subnet_id                   = data.aws_subnet.sn_app_a.id
   key_name                    = "ias-dasbotoapp-kp"
 
   tags = {
-    Name = "dasbotoapp"
+    Name = "wordpress-app"
   }
 
   iam_instance_profile = aws_iam_instance_profile.dev-resources-iam-profile.name
-  user_data            = <<-EOF
-                #!/bin/bash
-                sudo yum update -y
+  user_data = templatefile("./scripts/user_data_script.sh", {
+    DBEndpoint     = aws_ssm_parameter.wordpress["DBEndpoint"].value
+    DBRootPassword = aws_ssm_parameter.wordpress["DBRootPassword"].value
+    DBPassword     = aws_ssm_parameter.wordpress["DBRootPassword"].value
+    DBName         = aws_ssm_parameter.wordpress["DBName"].value
+    DBUser         = aws_ssm_parameter.wordpress["DBUser"].value
+  })
 
-                sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
 
-                sudo systemctl enable amazon-ssm-agent
-                sudo systemctl start amazon-ssm-agent
-              EOF
+
+
 
   vpc_security_group_ids = [aws_security_group.allow_app.id]
 }
-
