@@ -104,9 +104,5 @@ resource "aws_instance" "app" {
     DBUser         = aws_ssm_parameter.wordpress["DBUser"].value
   })
 
-
-
-
-
   vpc_security_group_ids = [aws_security_group.allow_app.id]
 }
