@@ -4,7 +4,7 @@ resource "aws_iam_role" "states_notification" {
 
   assume_role_policy = jsonencode({
     Statement = [{
-      Effect    = "Allow",
+      Effect = "Allow",
       Principal = {
         Service = "states.amazonaws.com"
       },
@@ -16,8 +16,8 @@ resource "aws_iam_role" "states_notification" {
     name = "allow_all_lambda_ses_sns_states_policy"
     policy = jsonencode({
       Statement = [{
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "sns:*",
           "lambda:invokeFunction",
           "logs:*"
@@ -39,7 +39,7 @@ resource "aws_cloudwatch_log_group" "notification" {
 
 resource "aws_sfn_state_machine" "sfn_state_machine" {
   name     = "notification-timer"
-  role_arn = "${aws_iam_role.states_notification.arn}"
+  role_arn = aws_iam_role.states_notification.arn
 
   logging_configuration {
     log_destination        = "${aws_cloudwatch_log_group.notification.arn}:*"

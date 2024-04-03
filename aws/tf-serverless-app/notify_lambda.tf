@@ -12,7 +12,7 @@ resource "aws_lambda_function" "notify" {
 
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
-  runtime          = "python3.8" 
+  runtime = "python3.8"
 
   environment {
     variables = {
@@ -27,7 +27,7 @@ resource "aws_iam_role" "lambda_notification_role" {
 
   assume_role_policy = jsonencode({
     Statement = [{
-      Effect    = "Allow",
+      Effect = "Allow",
       Principal = {
         Service = "lambda.amazonaws.com"
       },
@@ -39,8 +39,8 @@ resource "aws_iam_role" "lambda_notification_role" {
     name = "allow_all_lambda_ses_sns_states_policy"
     policy = jsonencode({
       Statement = [{
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "ses:*",
           "sns:*",
           "states:*",
@@ -52,8 +52,8 @@ resource "aws_iam_role" "lambda_notification_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "basic_lambda_permissions" {
-  role       = aws_iam_role.lambda_notification_role.name 
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" 
+  role       = aws_iam_role.lambda_notification_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 

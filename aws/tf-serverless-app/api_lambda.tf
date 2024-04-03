@@ -12,7 +12,7 @@ resource "aws_lambda_function" "api_lambda" {
 
   source_code_hash = data.archive_file.api_lambda.output_base64sha256
 
-  runtime          = "python3.8" 
+  runtime = "python3.8"
 
   environment {
     variables = {
@@ -28,5 +28,5 @@ resource "aws_lambda_permission" "apigw_lambda_permission" {
   function_name = aws_lambda_function.api_lambda.function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = aws_api_gateway_rest_api.api.execution_arn
+  source_arn = aws_api_gateway_rest_api.api.arn
 }

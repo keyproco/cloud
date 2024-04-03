@@ -32,21 +32,48 @@ resource "aws_api_gateway_integration" "lambda_integration" {
 
 module "api-gateway-enable-cors" {
 
-source  = "squidfunk/api-gateway-enable-cors/aws"
-version = "0.3.3"
-api_id          = aws_api_gateway_rest_api.api.id
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.3"
+  api_id  = aws_api_gateway_rest_api.api.id
 
-api_resource_id = aws_api_gateway_resource.api.id
+  api_resource_id = aws_api_gateway_resource.api.id
 
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
-  depends_on       = [aws_api_gateway_integration.lambda_integration]
 
-  rest_api_id      = aws_api_gateway_rest_api.api.id
-  stage_name       = "dev"
-  stage_description = "Development Stage"
+  depends_on  = [aws_api_gateway_integration.lambda_integration]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+
+  stage_name = "temp_stage"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
+
+resource "aws_api_gateway_stage" "stage" {
+
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  deployment_id = aws_api_gateway_deployment.deployment.id
+
+  stage_name = "dev"
+
+  #   access_log_settings {
+  #     destination_arn = aws_cloudwatch_log_group.apigateway_logs.arn
+  #     format          = jsonencode({ requestId = "$context.requestId" })
+  #   }
+  depends_on = [aws_api_gateway_deployment.deployment]
+}
+
+# resource "aws_cloudwatch_log_group" "apigateway_access_logs" {
+#   name = aws_api_gateway_rest_api.api.id
+# }
+
+# resource "aws_cloudwatch_log_group" "apigateway_logs" {
+#   name = "/aws/api-gateway/${aws_api_gateway_rest_api.api.id}"
+# }
+
 
 resource "aws_iam_role" "apigateway_logs_role" {
 
@@ -55,11 +82,11 @@ resource "aws_iam_role" "apigateway_logs_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect    = "Allow",
+      Effect = "Allow",
       Principal = {
         Service = "apigateway.amazonaws.com"
       },
-      Action    = "sts:AssumeRole"
+      Action = "sts:AssumeRole"
     }]
   })
 
@@ -68,11 +95,9 @@ resource "aws_iam_role" "apigateway_logs_role" {
     policy = jsonencode({
       Version = "2012-10-17",
       Statement = [{
-        Effect   = "Allow",
-        Action   = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
+        Effect = "Allow",
+        Action = [
+          "logs:*",
         ],
         Resource = "*"
       }]
@@ -84,9 +109,9 @@ resource "aws_iam_role" "apigateway_logs_role" {
     policy = jsonencode({
       Version = "2012-10-17",
       Statement = [{
-        Effect    = "Allow",
-        Action    = "lambda:InvokeFunction",
-        Resource  = aws_lambda_function.api_lambda.arn
+        Effect   = "Allow",
+        Action   = "lambda:InvokeFunction",
+        Resource = aws_lambda_function.api_lambda.arn
       }]
     })
   }
