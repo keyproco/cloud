@@ -64,3 +64,61 @@ resource "aws_route_table_association" "terransible_public_subnet_association" {
   subnet_id      = aws_subnet.terransible_public_subnet.id
   route_table_id = aws_route_table.terransible_rt.id
 }
+
+
+resource "aws_security_group" "allow_ssh" {
+  name        = "Allow ICMP and SSH"
+  description = "Allow SSH and ICMP inbound traffic"
+  vpc_id      = aws_vpc.terransible_vpc.id
+    description = "SSH from anywhere"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "ICMP from anywhere"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_icmp_ssh_anywhere"
+  }
+
+}
+
+
+
+#-------------------
+# Ec2 Instance
+#------------------
+
+resource "aws_key_pair" "terransible_kp" {
+  key_name   = "terransible-kp"
+  public_key = file("~/.ssh/id_rsa_2.pub")
+}
+
+resource "aws_instance" "web" {
+
+  ami                         = var.ami
+  instance_type = "t2.micro"
+  associate_public_ip_address = true
+
+  subnet_id = aws_subnet.terransible_public_subnet.id
+
+  key_name = "terransible-kp"
+
+  tags = {
+    Name = "Terransible Instance"
+  }
+  user_data              = <<-EOF
+              #!/bin/bash
+              echo "Hello from test.txt!" > /tmp/test.txt
+              EOF
+  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+
+}

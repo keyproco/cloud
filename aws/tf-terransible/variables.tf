@@ -14,3 +14,8 @@ variable "public_cidr" {
   type    = string
   default = "10.42.1.0/24"
 }
+
+
+variable "ami" {
+  default = "ami-04b7bf9494d21c5bb"
+}
