@@ -6,6 +6,11 @@ variable "aws_region" {
 }
 
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.42.0.0/16"
+}
+
+variable "public_cidr" {
+  type    = string
+  default = "10.42.1.0/24"
 }

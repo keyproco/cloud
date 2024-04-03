@@ -42,8 +42,25 @@ resource "aws_route_table" "terransible_rt" {
 }
 
 resource "aws_default_route_table" "private_rt" {
-    default_route_table_id = aws_vpc.terransible_vpc.default_route_table_id
-    tags = {
-        Name = "Terransible Private Route Table"
-    }
+  default_route_table_id = aws_vpc.terransible_vpc.default_route_table_id
+  tags = {
+    Name = "Terransible Private Route Table"
+  }
+}
+
+data "aws_availability_zones" "available" {}
+
+resource "aws_subnet" "terransible_public_subnet" {
+  vpc_id                  = aws_vpc.terransible_vpc.id
+  cidr_block              = var.public_cidr
+  map_public_ip_on_launch = true
+  availability_zone       = data.aws_availability_zones.available.names[0]
+  tags = {
+    Name = "Terransible Public Subnet"
+  }
+}
+
+resource "aws_route_table_association" "terransible_public_subnet_association" {
+  subnet_id      = aws_subnet.terransible_public_subnet.id
+  route_table_id = aws_route_table.terransible_rt.id
 }
