@@ -37,6 +37,13 @@ resource "aws_route_table" "terransible_rt" {
   }
 
   tags = {
-    Name = "Internet Gatway RouteTable"
+    Name = "Internet Gatway Route Table"
   }
+}
+
+resource "aws_default_route_table" "private_rt" {
+    default_route_table_id = aws_vpc.terransible_vpc.default_route_table_id
+    tags = {
+        Name = "Terransible Private Route Table"
+    }
 }
