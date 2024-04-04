@@ -70,9 +70,19 @@ resource "aws_security_group" "allow_ssh" {
   name        = "Allow ICMP and SSH"
   description = "Allow SSH and ICMP inbound traffic"
   vpc_id      = aws_vpc.terransible_vpc.id
+
+  ingress {
     description = "SSH from anywhere"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  ingress {
+    description = "HTTP 8080 from anywhere"
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -85,6 +95,21 @@ resource "aws_security_group" "allow_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  egress {
+    description = "HTTP from anywhere"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  egress {
+    description = "HTTPS from anywhere"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = {
     Name = "allow_icmp_ssh_anywhere"
   }
@@ -97,6 +122,7 @@ resource "aws_security_group" "allow_ssh" {
 # Ec2 Instance
 #------------------
 
+# 
 resource "aws_key_pair" "terransible_kp" {
   key_name   = "terransible-kp"
   public_key = file("~/.ssh/id_rsa_2.pub")
@@ -105,7 +131,7 @@ resource "aws_key_pair" "terransible_kp" {
 resource "aws_instance" "web" {
 
   ami                         = var.ami
-  instance_type = "t2.micro"
+  instance_type = "t2.medium"
   associate_public_ip_address = true
 
   subnet_id = aws_subnet.terransible_public_subnet.id
