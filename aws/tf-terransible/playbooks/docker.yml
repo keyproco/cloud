@@ -1,0 +1,62 @@
+# Ansible playbook AWS - install docker
+---
+- name: "AWS - Install docker"
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update all packages
+      yum:
+        name: '*'
+        state: latest
+        update_only: yes
+
+    - name: Ensure a list of yum packages are installed
+      yum:
+        name: "{{ packages }}"
+        state: latest
+        update_cache: yes
+      vars:
+        packages:
+        - python-pip
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        - amazon-linux-extras
+
+    - name: Add extras repository
+      shell: yum-config-manager --enable extras
+    # - name: Wait for yum lock to be released
+    #   wait_for:
+    #     path: /var/run/yum.pid
+    #     state: absent
+    #     timeout: 300
+    - name: Install docker-ce (centos) via amazon-linux-extras packages
+      shell: "amazon-linux-extras install -y docker"
+
+    - name: Enable Docker CE service at startup
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Ensure Python pip packages are installed
+      pip:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - boto
+        - boto3
+        - docker-compose
+
+    - name: Create directory
+      file:
+        path: /apps/kestra
+        state: directory  
+    - name: Copy Docker Compose file
+      copy:
+        src: "/Users/keyproco/labspace/cloud/aws/tf-terransible/playbooks/docker/kestra/docker-compose.yaml"
+        dest: "/apps/kestra/docker-compose.yaml"
+    - name: test docker-compose
+      docker_compose:
+        project_src: /apps/kestra/
+        state: present
