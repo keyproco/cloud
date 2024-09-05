@@ -1,33 +1,33 @@
 variable "resource_group_name" {
-  default     = "labspace"
+  default = "labspace"
 }
 
 variable "location" {
-  default     = "West Europe"
+  default = "West Europe"
 }
 
 variable "vnet_name" {
-  default     = "labspace-network"
+  default = "labspace-network"
 }
 
 variable "vnet_address_space" {
-  default     = ["10.42.1.0/24"]
+  default = ["10.42.1.0/24"]
 }
 
 
 variable "subscription_id" {
-  type        = string
+  type = string
 }
 
 variable "client_id" {
-  type        = string
+  type = string
 }
 
 variable "client_secret" {
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }
 
 variable "tenant_id" {
-  type        = string
+  type = string
 }

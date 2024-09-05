@@ -13,19 +13,19 @@ resource "azurerm_virtual_network" "_" {
 
 
 resource "azurerm_subnet" "_" {
-  for_each            = var.subnet_ranges
-  name                = each.key
-  resource_group_name = azurerm_resource_group._.name
+  for_each             = var.subnet_ranges
+  name                 = each.key
+  resource_group_name  = azurerm_resource_group._.name
   virtual_network_name = azurerm_virtual_network._.name
 
   address_prefixes = [each.value]
 }
 
 variable "subnet_ranges" {
-  type        = map(string)
-  default     = {
-    "alpha" = "10.42.1.0/27",
-    "bravo" = "10.42.1.32/27",
+  type = map(string)
+  default = {
+    "alpha"   = "10.42.1.0/27",
+    "bravo"   = "10.42.1.32/27",
     "charlie" = "10.42.1.64/27",
   }
 }
@@ -40,8 +40,8 @@ resource "azurerm_nat_gateway" "_" {
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "_" {
-  nat_gateway_id = azurerm_nat_gateway._.id
-    public_ip_address_id   = azurerm_public_ip.nat.id
+  nat_gateway_id       = azurerm_nat_gateway._.id
+  public_ip_address_id = azurerm_public_ip.nat.id
 }
 
 resource "azurerm_public_ip" "nat" {
@@ -56,7 +56,7 @@ resource "azurerm_public_ip" "nat" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "_" {
-  for_each  = var.subnet_ranges
+  for_each       = var.subnet_ranges
   subnet_id      = azurerm_subnet._[each.key].id
   nat_gateway_id = azurerm_nat_gateway._.id
 }
