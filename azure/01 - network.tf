@@ -30,3 +30,33 @@ variable "subnet_ranges" {
   }
 }
 
+resource "azurerm_nat_gateway" "_" {
+  name                = "labspace-gateway"
+  location            = azurerm_resource_group._.location
+  resource_group_name = azurerm_resource_group._.name
+  tags = {
+    environment = "testing"
+  }
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "_" {
+  nat_gateway_id = azurerm_nat_gateway._.id
+    public_ip_address_id   = azurerm_public_ip.nat.id
+}
+
+resource "azurerm_public_ip" "nat" {
+  name                = "spacelab-nat-ip"
+  location            = azurerm_resource_group._.location
+  resource_group_name = azurerm_resource_group._.name
+  allocation_method   = "Static"
+
+  tags = {
+    environment = "testing"
+  }
+}
+
+resource "azurerm_subnet_nat_gateway_association" "_" {
+  for_each  = var.subnet_ranges
+  subnet_id      = azurerm_subnet._[each.key].id
+  nat_gateway_id = azurerm_nat_gateway._.id
+}
