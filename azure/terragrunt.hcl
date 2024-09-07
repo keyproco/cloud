@@ -21,5 +21,24 @@ provider "azurerm" {
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
 }
+
+EOF
+}
+
+
+
+generate "backend" {
+  path      = "backend.tf"
+  if_exists = "overwrite_terragrunt"
+
+  contents = <<EOF
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "labspace"
+    storage_account_name = "terraform2labspace"
+    container_name       = "tfstate"
+    key                  = "${path_relative_to_include()}.terraform.tfstate"       
+  }
+}
 EOF
 }
