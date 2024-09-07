@@ -19,14 +19,13 @@ resource "azurerm_lb" "labspace" {
     name                 = "PublicIPAddress"
     public_ip_address_id = azurerm_public_ip.lb_public_ip.id
   }
-
-
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "nic_to_lb_pool" {
-  network_interface_id    = azurerm_network_interface.vm.id
+    ip_configuration_name = "internal"
+  for_each = var.vault_nodes
+  network_interface_id     = azurerm_network_interface.vm[each.key].id
   backend_address_pool_id = azurerm_lb_backend_address_pool.labspace.id
-  ip_configuration_name   = "internal"
 }
 
 resource "azurerm_lb_rule" "labspace" {
@@ -34,7 +33,7 @@ resource "azurerm_lb_rule" "labspace" {
   name                           = "LBRule"
   protocol                       = "Tcp"
   frontend_port                  = 80
-  backend_port                   = 80
+  backend_port                   = 8200
   frontend_ip_configuration_name = "PublicIPAddress"
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.labspace.id]
 }
@@ -42,7 +41,7 @@ resource "azurerm_lb_rule" "labspace" {
 resource "azurerm_lb_probe" "labspace" {
   loadbalancer_id = azurerm_lb.labspace.id
   name            = "http"
-  port            = 80
+  port            = 8200
 }
 
 resource "azurerm_lb_backend_address_pool" "labspace" {

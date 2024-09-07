@@ -31,7 +31,7 @@ resource "azurerm_network_security_rule" "allow_http_https" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  destination_port_ranges     = ["80", "443"]
+  destination_port_ranges     = ["80", "443", "8200", "8201"]
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
 }
@@ -50,10 +50,12 @@ resource "azurerm_network_security_rule" "allow_ssh" {
   destination_address_prefix  = "*"
 }
 
-# resource "azurerm_network_interface_security_group_association" "_" {
-#   network_interface_id      = azurerm_network_interface.vm.id
-#   network_security_group_id = azurerm_network_security_group._.id
-# }
+resource "azurerm_network_interface_security_group_association" "association" {
+  for_each = azurerm_network_interface.vm
+
+  network_interface_id      = each.value.id
+  network_security_group_id = azurerm_network_security_group._.id
+}
 
 resource "azurerm_subnet_network_security_group_association" "__" {
   subnet_id                 = azurerm_subnet._["alpha"].id
