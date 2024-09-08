@@ -28,5 +28,5 @@ variable "tenant_id" {
 }
 
 variable "github_token" {
-    type = string
+  type = string
 }

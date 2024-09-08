@@ -3,7 +3,7 @@ resource "azurerm_service_plan" "sp" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  os_type = "Windows"
+  os_type  = "Windows"
   sku_name = "S1"
 
   tags = {
@@ -16,7 +16,7 @@ resource "azurerm_windows_web_app" "w_webapp" {
   name                = "windows-app-${var.resource_group_name}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  service_plan_id = azurerm_service_plan.sp.id
+  service_plan_id     = azurerm_service_plan.sp.id
 
   site_config {
 
@@ -27,13 +27,30 @@ resource "azurerm_windows_web_app" "w_webapp" {
   ]
 }
 
-
 resource "azurerm_app_service_source_control" "webapp_source_control" {
-  app_id               = azurerm_windows_web_app.w_webapp.id
-  repo_url             = "https://github.com/keyproco/ausemartweb.git"
-  branch               = "main"
+  app_id   = azurerm_windows_web_app.w_webapp.id
+  repo_url = "https://github.com/keyproco/ausemartweb.git"
+  branch   = "main"
 
-   depends_on = [
+  depends_on = [
+    azurerm_app_service_source_control_token.github
+  ]
+
+}
+
+resource "azurerm_windows_web_app_slot" "webapp_source_control_staging" {
+  name           = "staging"
+  app_service_id = azurerm_windows_web_app.w_webapp.id
+
+  site_config {}
+}
+
+resource "azurerm_app_service_source_control_slot" "webapp_source_control_staging" {
+  slot_id   = azurerm_windows_web_app_slot.webapp_source_control_staging.id
+  repo_url = "https://github.com/keyproco/ausemartweb.git"
+  branch   = "staging"
+
+  depends_on = [
     azurerm_app_service_source_control_token.github
   ]
 
