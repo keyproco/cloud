@@ -36,3 +36,5 @@ terraform.rc
 # Vm Ssh access
 private_key.pem
 public_key.pem
+
+credentials.sh
